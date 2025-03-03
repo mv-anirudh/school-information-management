@@ -1,0 +1,253 @@
+{% load static %}
+
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <!-- Brand Logo -->
+    <a href="{% url 'staff_home' %}" class="brand-link">
+        <img src="{% static 'dist/img/AdminLTELogo.png' %}" alt="Open University" class="brand-image img-circle elevation-3">
+        <span class="brand-text">Open University</span>
+    </a>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- User Panel -->
+        <div class="user-panel mt-3 pb-3 mb-3">
+            <div class="user-info">
+                <div class="image">
+                    <img src="{% static 'dist/img/user2-160x160.jpg' %}" class="img-circle elevation-2" alt="User Image">
+                </div>
+                <div class="info">
+                    <a href="{% url 'staff_profile' %}" class="d-block">{{ user.first_name }} {{ user.last_name }}</a>
+                    <span class="user-status">Staff Member</span>
+                </div>
+            </div>
+            <div class="datetime-info">
+                <span class="date">2025-03-03</span>
+                <span class="time">08:59:37</span>
+            </div>
+        </div>
+
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    {% url 'staff_home' as staff_home %}
+                    <a href="{{ staff_home }}" class="nav-link {% if request.path == staff_home %}active{% endif %}">
+                        <i class="nav-icon fas fa-home"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+
+                <!-- Attendance Section -->
+                <li class="nav-header">ATTENDANCE</li>
+                <li class="nav-item">
+                    {% url 'staff_take_attendance' as staff_take_attendance %}
+                    <a href="{{ staff_take_attendance }}" class="nav-link {% if request.path == staff_take_attendance %}active{% endif %}">
+                        <i class="nav-icon fas fa-calendar-plus"></i>
+                        <p>Take Attendance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'staff_update_attendance' as staff_update_attendance %}
+                    <a href="{{ staff_update_attendance }}" class="nav-link {% if request.path == staff_update_attendance %}active{% endif %}">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>Update Attendance</p>
+                    </a>
+                </li>
+
+                <!-- Academic Section -->
+                <li class="nav-header">ACADEMIC</li>
+                <li class="nav-item">
+                    {% url 'staff_add_result' as staff_add_result %}
+                    <a href="{{ staff_add_result }}" class="nav-link {% if request.path == staff_add_result %}active{% endif %}">
+                        <i class="nav-icon fas fa-graduation-cap"></i>
+                        <p>Add Result</p>
+                    </a>
+                </li>
+
+                <!-- Clubs Management -->
+                <li class="nav-header">CLUBS & ACTIVITIES</li>
+                <li class="nav-item">
+                    {% url 'staff_manage_clubs' as staff_manage_clubs %}
+                    <a href="{{ staff_manage_clubs }}" class="nav-link {% if request.path == staff_manage_clubs %}active{% endif %}">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>
+                            Manage Clubs
+                            <span class="right badge badge-info">New</span>
+                        </p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'staff_create_club' as staff_create_club %}
+                    <a href="{{ staff_create_club }}" class="nav-link {% if request.path == staff_create_club %}active{% endif %}">
+                        <i class="nav-icon fas fa-plus-circle"></i>
+                        <p>Create Club</p>
+                    </a>
+                </li>
+
+                <!-- Communication -->
+                <li class="nav-header">COMMUNICATION</li>
+                <li class="nav-item">
+                    {% url 'staff_apply_leave' as staff_apply_leave %}
+                    <a href="{{ staff_apply_leave }}" class="nav-link {% if request.path == staff_apply_leave %}active{% endif %}">
+                        <i class="nav-icon fas fa-envelope"></i>
+                        <p>Apply Leave</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    {% url 'staff_feedback' as staff_feedback %}
+                    <a href="{{ staff_feedback }}" class="nav-link {% if request.path == staff_feedback %}active{% endif %}">
+                        <i class="nav-icon fas fa-comment-alt"></i>
+                        <p>Feedback</p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>
+
+<style>
+:root {
+    --sidebar-bg: #1a1a2e;
+    --sidebar-hover: #16213e;
+    --sidebar-active: #0f3460;
+    --sidebar-text: #e94560;
+}
+
+.main-sidebar {
+    background: var(--sidebar-bg);
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.brand-link {
+    border: none !important;
+    padding: 1.5rem 1rem;
+}
+
+.brand-text {
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.user-panel {
+    border: none;
+    padding: 1rem;
+    background: var(--sidebar-hover);
+    border-radius: 8px;
+    margin: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-status {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.datetime-info {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    justify-content: space-between;
+}
+
+.nav-header {
+    padding: 1rem;
+    color: var(--sidebar-text);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin-top: 1rem;
+}
+
+.nav-link {
+    border-radius: 8px;
+    margin: 0.25rem 1rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background: var(--sidebar-hover);
+}
+
+.nav-link.active {
+    background: var(--sidebar-active) !important;
+}
+
+.nav-icon {
+    width: 1.5rem;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.badge-info {
+    background: var(--sidebar-text);
+    color: white;
+}
+
+/* Animations */
+.nav-link {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--sidebar-text);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.nav-item {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.1s; }
+.nav-item:nth-child(2) { animation-delay: 0.2s; }
+.nav-item:nth-child(3) { animation-delay: 0.3s; }
+/* ... and so on */
+</style>
+
+<script>
+// Update datetime every second
+function updateDateTime() {
+    const now = new Date();
+    const date = now.toISOString().split('T')[0];
+    const time = now.toTimeString().split(' ')[0];
+    
+    document.querySelector('.datetime-info .date').textContent = date;
+    document.querySelector('.datetime-info .time').textContent = time;
+}
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>

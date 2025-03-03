@@ -1,0 +1,64 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+    Create New Club
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-plus-circle mr-2"></i>Create New Club
+                        </h3>
+                    </div>
+
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'staff_create_club' %}">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-signature mr-2"></i>Club Name
+                                </label>
+                                <input type="text" name="club_name" class="modern-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-info-circle mr-2"></i>Description
+                                </label>
+                                <textarea name="description" class="modern-textarea" rows="4" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="modern-button">
+                                <i class="fas fa-save mr-2"></i>Create Club
+                            </button>
+                            <a href="{% url 'staff_manage_clubs' %}" class="modern-button secondary">
+                                <i class="fas fa-arrow-left mr-2"></i>Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}

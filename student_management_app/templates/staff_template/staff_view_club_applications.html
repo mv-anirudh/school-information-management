@@ -1,0 +1,439 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+    Club Applications - {{ club.name }}
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+      
+
+        <!-- Club Info -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="club-info-card">
+                    <div class="club-info-header">
+                        <h2>{{ club.name }}</h2>
+                        <a href="{% url 'staff_manage_clubs' %}" class="back-button">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Clubs
+                        </a>
+                    </div>
+                    <div class="club-info-body">
+                        <p>{{ club.description }}</p>
+                        <div class="club-stats">
+                            <div class="stat-box">
+                                <span class="stat-value">{{ applications.count }}</span>
+                                <span class="stat-label">Total Applications</span>
+                            </div>
+                            
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applications -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clipboard-list mr-2"></i>Applications
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+                        {% if applications %}
+                            <div class="applications-grid">
+                                {% for application in applications %}
+                                <div class="application-card status-{{ application.status }}">
+                                    <div class="application-header">
+                                        <div class="student-info">
+                                            <img src="{{ application.student_id.admin.profile_pic.url }}" 
+                                                 alt="Student" class="student-avatar">
+                                            <div>
+                                                <h4>{{ application.student_id.admin.first_name }} 
+                                                    {{ application.student_id.admin.last_name }}</h4>
+                                                <span class="text-muted">Applied: {{ application.application_date|date:"M d, Y" }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="application-status">
+                                            {% if application.status == 0 %}
+                                                <span class="badge badge-warning">Pending</span>
+                                            {% elif application.status == 1 %}
+                                                <span class="badge badge-success">Approved</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Rejected</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <div class="application-body">
+                                        <h5>Application Message:</h5>
+                                        <p>{{ application.application_message }}</p>
+                                        
+                                        {% if application.feedback %}
+                                            <h5>Feedback:</h5>
+                                            <p>{{ application.feedback }}</p>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if application.status == 0 %}
+                                        <div class="application-actions">
+                                            <button type="button" class="btn-approve"
+                                                    onclick="showApprovalModal({{ application.id }})">
+                                                <i class="fas fa-check mr-2"></i>Approve
+                                            </button>
+                                            <button type="button" class="btn-reject"
+                                                    onclick="showRejectionModal({{ application.id }})">
+                                                <i class="fas fa-times mr-2"></i>Reject
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list"></i>
+                                <h3>No Applications</h3>
+                                <p>There are currently no applications for this club.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="approvalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="" method="POST" id="approvalForm">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Approve Application</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Feedback (Optional)</label>
+                            <textarea name="feedback" class="form-control" rows="4"
+                                      placeholder="Provide feedback for the student..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Approve</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rejectionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="" method="POST" id="rejectionForm">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reject Application</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Feedback (Required)</label>
+                            <textarea name="feedback" class="form-control" rows="4"
+                                      placeholder="Provide reason for rejection..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<style>
+/* ... (Previous styles remain the same) ... */
+
+.club-info-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.club-info-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}                                               
+<!-- Continuing from previous CSS -->
+<style>
+/* ... (Previous styles) ... */
+
+.club-info-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.club-info-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.club-info-body {
+    padding: 1.5rem;
+}
+
+.club-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.stat-box {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.stat-label {
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.applications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.application-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.application-card:hover {
+    transform: translateY(-5px);
+}
+
+.application-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.student-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.application-status {
+    margin-top: 1rem;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #f44336, #e53935);
+    color: white;
+}
+
+.application-body {
+    padding: 1.5rem;
+}
+
+.application-actions {
+    padding: 1.5rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn-approve, .btn-reject {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    border: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-approve {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.btn-reject {
+    background: linear-gradient(135deg, #f44336, #e53935);
+    color: white;
+}
+
+.btn-approve:hover, .btn-reject:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* Modal Styles */
+.modal-content {
+    border: none;
+    border-radius: var(--border-radius);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.modal-header .close {
+    color: white;
+}
+
+.form-control {
+    border-radius: var(--border-radius);
+    border: 1px solid #dee2e6;
+    padding: 0.75rem;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Display current user and time in status bar
+    $('.status-bar span:first-child').html('<i class="fas fa-user-circle mr-2"></i>{{ current_user }}');
+    $('.status-bar span:last-child').html('<i class="far fa-clock mr-2"></i>2025-03-03 08:57:43');
+    
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
+function showApprovalModal(applicationId) {
+    $('#approvalForm').attr('action', `/staff_approve_club_application/${applicationId}`);
+    $('#approvalModal').modal('show');
+}
+
+function showRejectionModal(applicationId) {
+    $('#rejectionForm').attr('action', `/staff_reject_club_application/${applicationId}`);
+    $('#rejectionModal').modal('show');
+}
+
+// Animate elements on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const applications = document.querySelectorAll('.application-card');
+    applications.forEach((app, index) => {
+        app.style.opacity = '0';
+        app.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            app.style.opacity = '1';
+            app.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+
+// Form validation
+$('#rejectionForm').on('submit', function(e) {
+    const feedback = $(this).find('textarea[name="feedback"]').val();
+    if (!feedback.trim()) {
+        e.preventDefault();
+        alert('Please provide feedback for rejection');
+    }
+});
+
+// Confirm actions
+$('.btn-approve').on('click', function(e) {
+    if (!confirm('Are you sure you want to approve this application?')) {
+        e.preventDefault();
+    }
+});
+
+$('.btn-reject').on('click', function(e) {
+    if (!confirm('Are you sure you want to reject this application?')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock custom_js %}

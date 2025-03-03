@@ -1,0 +1,260 @@
+{% extends 'student_template/base_template.html' %}
+
+{% block page_title %}
+    Leave Report and Apply for Leave
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+      
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-plus mr-2"></i>Apply For Leave
+                        </h3>
+                    </div>
+
+                    {% if messages %}
+                    <div class="alert-container">
+                        {% for message in messages %}
+                        <div class="modern-alert {{ message.tags }}" role="alert">
+                            <i class="fas fa-{% if message.tags == 'error' %}exclamation{% else %}check{% endif %}-circle mr-2"></i>
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'student_apply_leave_save' %}">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-day mr-2"></i>Leave Date</label>
+                                <input type="date" name="leave_date" class="modern-input" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label><i class="fas fa-comment-alt mr-2"></i>Leave Reason</label>
+                                <textarea name="leave_message" class="modern-textarea" rows="6" placeholder="Please provide detailed reason for leave..." required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="modern-button">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit Leave Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Leave History -->
+                <div class="modern-card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-history mr-2"></i>Leave History
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>#ID</th>
+                                        <th>Leave Date</th>
+                                        <th>Leave Message</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                
+                                <tbody>
+                                    {% for leave in leave_data %}
+                                    <tr>
+                                        <td>{{ leave.id }}</td>
+                                        <td>
+                                            <i class="far fa-calendar-alt mr-2"></i>
+                                            {{ leave.leave_date }}
+                                        </td>
+                                        <td>{{ leave.leave_message }}</td>
+                                        <td>
+                                            {% if leave.leave_status == 1 %}
+                                                <span class="status-badge success">
+                                                    <i class="fas fa-check-circle mr-1"></i>Approved
+                                                </span>
+                                            {% elif leave.leave_status == 2 %}
+                                                <span class="status-badge danger">
+                                                    <i class="fas fa-times-circle mr-1"></i>Rejected
+                                                </span>
+                                            {% else %}
+                                                <span class="status-badge warning">
+                                                    <i class="fas fa-clock mr-1"></i>Pending
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<style>
+:root {
+    --primary: #4361ee;
+    --secondary: #3a0ca3;
+    --success: #4CAF50;
+    --danger: #f44336;
+    --warning: #ff9800;
+    --border-radius: 8px;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modern-card {
+    background: white;
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.modern-card .card-header {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.modern-input, .modern-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.modern-input:focus, .modern-textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+    outline: none;
+}
+
+.modern-textarea {
+    resize: vertical;
+}
+
+.modern-button {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.modern-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+}
+
+.modern-alert {
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: var(--border-radius);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modern-alert.error {
+    background: linear-gradient(135deg, #f44336, #e53935);
+}
+
+.modern-alert.success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.modern-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.modern-table thead tr {
+    background: #f8f9fa;
+}
+
+.modern-table th {
+    padding: 1rem;
+    font-weight: 600;
+    color: #495057;
+    border: none;
+}
+
+.modern-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+}
+
+.status-badge.success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.status-badge.danger {
+    background: linear-gradient(135deg, #f44336, #e53935);
+}
+
+.status-badge.warning {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modern-table tbody tr {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+{% for i in leave_data %}
+.modern-table tbody tr:nth-child({{ forloop.counter }}) {
+}
+{% endfor %}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Set min date to today
+    const today = new Date().toISOString().split('T')[0];
+    $('input[name="leave_date"]').attr('min', today);
+});
+</script>
+{% endblock custom_js %}

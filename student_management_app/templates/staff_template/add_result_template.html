@@ -1,0 +1,167 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+    Add Result
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Status Bar -->
+    
+
+        <div class="row">
+            <div class="col-md-12">
+                <form method="POST" action="{% url 'staff_add_result_save' %}">
+                    {% csrf_token %}
+                    <div class="card" style="background-color: #ffffff; border: none; box-shadow: var(--card-shadow); border-radius: var(--border-radius);">
+                        <div class="card-header" style="background: linear-gradient(135deg, #4361ee, #3a0ca3); color: white; border-radius: var(--border-radius) var(--border-radius) 0 0;">
+                            <h3 class="card-title">
+                                <i class="fas fa-graduation-cap mr-2"></i>Add Student Result
+                            </h3>
+                        </div>
+
+                        {% if messages %}
+                        <div class="form-group">
+                            <div class="col-12">
+                                {% for message in messages %}
+                                {% if message.tags == "error" %}
+                                <div class="alert alert-danger alert-dismissible fade show m-3" role="alert" 
+                                     style="border-radius: var(--border-radius); border: none;">
+                                    <i class="fas fa-exclamation-circle mr-2"></i>{{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                {% elif message.tags == "success" %}
+                                <div class="alert alert-success alert-dismissible fade show m-3" role="alert"
+                                     style="border-radius: var(--border-radius); border: none;">
+                                    <i class="fas fa-check-circle mr-2"></i>{{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-book mr-2" style="color: #4361ee;"></i>Subject
+                                </label>
+                                <select class="form-control" name="subject" id="subject" 
+                                        style="border-radius: var(--border-radius); border: 1px solid #ddd; padding: 0.75rem;">
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject.id }}">{{ subject.subject_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-calendar-alt mr-2" style="color: #4361ee;"></i>Session Year
+                                </label>
+                                <select class="form-control" name="session_year" id="session_year"
+                                        style="border-radius: var(--border-radius); border: 1px solid #ddd; padding: 0.75rem;">
+                                    {% for session_year in session_years %}
+                                        <option value="{{ session_year.id }}">
+                                            {{ session_year.session_start_year }} to {{ session_year.session_end_year }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card-footer" style="background: transparent;">
+                            <button type="button" class="btn" id="fetch_student"
+                                    style="background: linear-gradient(135deg, #4361ee, #3a0ca3); color: white; border-radius: var(--border-radius); padding: 0.75rem 2rem; border: none; transition: all 0.3s ease;">
+                                <i class="fas fa-search mr-2"></i>Fetch Students
+                            </button>
+                        </div>
+
+                        <div class="card-footer" id="student_data" style="background: transparent;">
+                            <!-- Student data will be dynamically loaded here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+$(document).ready(function(){
+    $("#fetch_student").click(function(){
+        var subject = $("#subject").val();
+        var session_year = $("#session_year").val();
+
+        $.ajax({
+            url: '{% url 'get_students' %}',
+            type: 'POST',
+            data: {
+                subject: subject,
+                session_year: session_year
+            },
+        })
+        .done(function(response){
+            var json_data = JSON.parse(response);
+            console.log(json_data);
+            
+            var div_data = `
+                <div class='form-group'>
+                    <label><i class='fas fa-users mr-2' style='color: #4361ee;'></i>Select Student</label>
+                    <select class='student_list form-control' name='student_list' 
+                            style='border-radius: var(--border-radius); border: 1px solid #ddd; padding: 0.75rem;'>
+            `;
+
+            for(key in json_data) {
+                div_data += `<option value='${json_data[key]['id']}'>ID: ${json_data[key]['id']} : ${json_data[key]['name']}</option>`;
+            }
+            
+            div_data += `</select></div>
+                <div class='form-group'>
+                    <div class='row'>
+                        <div class='col-lg-6'>
+                            <label><i class='fas fa-tasks mr-2' style='color: #4361ee;'></i>Assignment Marks</label>
+                            <input type='text' name='assignment_marks' class='form-control' 
+                                   placeholder='Enter assignment marks' 
+                                   style='border-radius: var(--border-radius); border: 1px solid #ddd; padding: 0.75rem;'/>
+                        </div>
+                        <div class='col-lg-6'>
+                            <label><i class='fas fa-file-alt mr-2' style='color: #4361ee;'></i>Exam Marks</label>
+                            <input type='text' name='exam_marks' class='form-control' 
+                                   placeholder='Enter exam marks'
+                                   style='border-radius: var(--border-radius); border: 1px solid #ddd; padding: 0.75rem;'/>
+                        </div>
+                    </div>
+                </div>
+                <div class='form-group'>
+                    <button id='save_attendance' class='btn btn-block' type='submit'
+                            style='background: linear-gradient(135deg, #4361ee, #3a0ca3); color: white; 
+                                   border-radius: var(--border-radius); padding: 0.75rem; border: none; 
+                                   transition: all 0.3s ease;'>
+                        <i class='fas fa-save mr-2'></i>Save Result
+                    </button>
+                </div>`;
+            
+            $("#student_data").html(div_data);
+        })
+        .fail(function(){
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to fetch student data!'
+            });
+        });
+    });
+});
+</script>
+{% endblock custom_js %}

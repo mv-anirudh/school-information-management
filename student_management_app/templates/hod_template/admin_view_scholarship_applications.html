@@ -1,0 +1,383 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block main_content %}
+<section class="content">
+    <!-- Applications List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-file-alt mr-2"></i>Scholarship Applications
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    {% if applications %}
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student</th>
+                                    <th>Scholarship</th>
+                                    <th>Applied On</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applications %}
+                                <tr>
+                                    <td>#{{ app.id }}</td>
+                                    <td>
+                                        <div class="student-info">
+                                            <img src="{{ app.student_id.admin.profile_pic.url }}" 
+                                                 alt="Student" class="student-avatar">
+                                            <div>
+                                                <strong>{{ app.student_id.admin.first_name }} 
+                                                        {{ app.student_id.admin.last_name }}</strong>
+                                                <small class="text-muted d-block">
+                                                    Income: ₹{{ app.family_income }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ app.scholarship_type.name }}</td>
+                                    <td>{{ app.application_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if app.status == 0 %}
+                                            <span class="status-badge warning">Pending</span>
+                                        {% elif app.status == 1 %}
+                                            <span class="status-badge success">Approved</span>
+                                        {% else %}
+                                            <span class="status-badge danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin_view_scholarship_application_detail' app.id %}" 
+                                           class="action-button">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if app.status == 0 %}
+                                        <button class="action-button success" 
+                                                onclick="showApprovalModal({{ app.id }})">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="action-button danger" 
+                                                onclick="showRejectionModal({{ app.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>No Applications</h3>
+                        <p>There are currently no scholarship applications.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approval Modal -->
+    <div class="modal fade" id="approvalModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="approvalForm" method="POST" action="">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Approve Application</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Feedback</label>
+                            <textarea name="feedback" class="modern-textarea" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-primary">Approve Application</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div class="modal fade" id="rejectionModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="rejectionForm" method="POST" action="">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reject Application</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Feedback (Required)</label>
+                            <textarea name="feedback" class="modern-textarea" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-danger">Reject Application</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+:root {
+    --primary: #1a1a2e;
+    --secondary: #16213e;
+    --accent: #0f3460;
+    --text: #e94560;
+    --border-radius: 8px;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modern-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    background: var(--primary);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: 2px solid var(--text);
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.modern-table th {
+    background: var(--secondary);
+    color: white;
+    padding: 1rem;
+    font-weight: 500;
+    text-align: left;
+}
+
+.modern-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    vertical-align: middle;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.student-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--text);
+    object-fit: cover;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    color: white;
+    text-align: center;
+}
+
+.status-badge.warning {
+    background: #ff9800;
+}
+
+.status-badge.success {
+    background: #4CAF50;
+}
+
+.status-badge.danger {
+    background: #f44336;
+}
+
+.action-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+    background: var(--accent);
+    cursor: pointer;
+}
+
+.action-button.success {
+    background: #4CAF50;
+}
+
+.action-button.danger {
+    background: #f44336;
+}
+
+.action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: var(--primary);
+    color: white;
+    border-bottom: 2px solid var(--text);
+    padding: 1rem 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.modern-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    resize: vertical;
+    font-family: inherit;
+}
+
+.modern-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(15, 52, 96, 0.2);
+    outline: none;
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.btn-primary:hover, .btn-secondary:hover, .btn-danger:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--secondary);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modern-table tbody tr {
+    animation: fadeIn 0.5s ease forwards;
+    animation-delay: calc(var(--row-index, 0) * 0.05s);
+}
+
+.close {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+</style>
+
+<script>
+function showApprovalModal(applicationId) {
+    const form = document.getElementById('approvalForm');
+    form.action = "{% url 'approve_scholarship_application' 0 %}".replace('0', applicationId);
+    $('#approvalModal').modal('show');
+}
+
+function showRejectionModal(applicationId) {
+    const form = document.getElementById('rejectionForm');
+    form.action = "{% url 'reject_scholarship_application' 0 %}".replace('0', applicationId);
+    $('#rejectionModal').modal('show');
+}
+
+// Add animation delay to table rows
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.modern-table tbody tr');
+    rows.forEach((row, index) => {
+        row.style.setProperty('--row-index', index);
+    });
+});
+</script>
+{% endblock main_content %}

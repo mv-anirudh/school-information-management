@@ -1,0 +1,149 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+    Feedback Message
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+       
+
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Feedback Form Card -->
+                <div class="card" style="background-color: #ffffff; border: none; box-shadow: var(--card-shadow); border-radius: var(--border-radius);">
+                    <div class="card-header" style="background: linear-gradient(135deg, #4361ee, #3a0ca3); color: white; border-radius: var(--border-radius) var(--border-radius) 0 0;">
+                        <h3 class="card-title">
+                            <i class="far fa-comment-alt mr-2"></i>Leave a Feedback Message
+                        </h3>
+                    </div>
+
+                    {% if messages %}
+                    <div class="form-group">
+                        <div class="col-12">
+                            {% for message in messages %}
+                            {% if message.tags == "error" %}
+                            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert" 
+                                 style="border-radius: var(--border-radius); border: none;">
+                                <i class="fas fa-exclamation-circle mr-2"></i>{{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% elif message.tags == "success" %}
+                            <div class="alert alert-success alert-dismissible fade show m-3" role="alert"
+                                 style="border-radius: var(--border-radius); border: none;">
+                                <i class="fas fa-check-circle mr-2"></i>{{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                            
+                    <form method="POST" action="{% url 'staff_feedback_save' %}">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>
+                                    <i class="far fa-edit mr-2" style="color: #4361ee;"></i>Your Message
+                                </label>
+                                <textarea name="feedback_message" class="form-control" rows="6" 
+                                          placeholder="Write your feedback here..."
+                                          style="border-radius: var(--border-radius); border: 1px solid #ddd; padding: 0.75rem;"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="card-footer" style="background: transparent;">
+                            <button type="submit" class="btn" 
+                                    style="background: linear-gradient(135deg, #4361ee, #3a0ca3); color: white; border-radius: var(--border-radius); padding: 0.75rem 2rem; border: none; transition: all 0.3s ease;">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Feedback History Card -->
+                <div class="card mt-4" style="background-color: #ffffff; border: none; box-shadow: var(--card-shadow); border-radius: var(--border-radius);">
+                    <div class="card-header" style="background: linear-gradient(135deg, #4361ee, #3a0ca3); color: white; border-radius: var(--border-radius) var(--border-radius) 0 0;">
+                        <h3 class="card-title">
+                            <i class="fas fa-history mr-2"></i>Feedback History
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead style="background-color: #f8f9fa;">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Feedback Message</th>
+                                        <th>Admin Reply</th>
+                                    </tr>
+                                </thead>
+                                
+                                <tbody>
+                                    {% for row in feedback_data %}
+                                    <tr>
+                                        <td><span class="badge badge-light">#{{ row.id }}</span></td>
+                                        <td>
+                                            <div class="feedback-message p-2" style="background: #f8f9fa; border-radius: var(--border-radius);">
+                                                <i class="far fa-comment mr-2" style="color: #4361ee;"></i>
+                                                {{ row.feedback }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if row.feedback_reply %}
+                                            <div class="feedback-reply p-2" style="background: #e8f4fe; border-radius: var(--border-radius);">
+                                                <i class="fas fa-reply mr-2" style="color: #4361ee;"></i>
+                                                {{ row.feedback_reply }}
+                                            </div>
+                                            {% else %}
+                                            <span class="badge badge-warning" style="font-size: 14px; padding: 8px 15px;">
+                                                <i class="fas fa-clock mr-1"></i>Awaiting Reply
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+$(document).ready(function() {
+    // Initialize tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Add hover effects to buttons
+    $('.btn').hover(
+        function() { $(this).css('opacity', '0.85'); },
+        function() { $(this).css('opacity', '1'); }
+    );
+
+    // Add animation to alerts
+    $('.alert').addClass('animate__animated animate__fadeIn');
+
+    // Add hover effect to feedback messages
+    $('.feedback-message, .feedback-reply').hover(
+        function() { $(this).css('box-shadow', '0 2px 8px rgba(0,0,0,0.1)'); },
+        function() { $(this).css('box-shadow', 'none'); }
+    );
+});
+</script>
+{% endblock custom_js %}

@@ -1,0 +1,165 @@
+{% extends 'student_template/base_template.html' %}
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Available Scholarships</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        {% if messages %}
+                        <div class="col-12">
+                            {% for message in messages %}
+                            {% if message.tags == 'error' %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                            {% else %}
+                            <div class="alert alert-success">{{ message }}</div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <table id="example2" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Scholarship Name</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for scholarship in scholarships %}
+                                <tr>
+                                    <td>{{ scholarship.name }}</td>
+                                    <td>{{ scholarship.description }}</td>
+                                    <td>${{ scholarship.amount }}</td>
+                                    <td>
+                                        {% if scholarship.id in applied_scholarship_ids %}
+                                            {% for app in applications %}
+                                                {% if app.scholarship_type.id == scholarship.id %}
+                                                    {% if app.status == 0 %}
+                                                        <span class="badge badge-warning">Pending</span>
+                                                    {% elif app.status == 1 %}
+                                                        <span class="badge badge-success">Approved</span>
+                                                    {% else %}
+                                                        <span class="badge badge-danger">Rejected</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="badge badge-info">Not Applied</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if scholarship.id not in applied_scholarship_ids %}
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#applyScholarship{{ scholarship.id }}">
+                                                Apply
+                                            </button>
+                                        {% else %}
+                                            {% for app in applications %}
+                                                {% if app.scholarship_type.id == scholarship.id and app.hod_feedback %}
+                                                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#feedback{{ app.id }}">
+                                                        View Feedback
+                                                    </button>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <!-- Apply Modal -->
+                                <div class="modal fade" id="applyScholarship{{ scholarship.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Apply for {{ scholarship.name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{% url 'student_apply_scholarship' %}" method="post" enctype="multipart/form-data">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="scholarship_id" value="{{ scholarship.id }}">
+                                                    
+                                                    <div class="form-group">
+                                                        <label>Family Annual Income ($)</label>
+                                                        <input type="number" class="form-control" name="family_income" required>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <label>Academic Achievements</label>
+                                                        <textarea class="form-control" name="academic_achievements" rows="3" required></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <label>Extra-curricular Achievements (Optional)</label>
+                                                        <textarea class="form-control" name="extra_curricular" rows="3"></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <label>Statement of Purpose</label>
+                                                        <textarea class="form-control" name="purpose" rows="5" required></textarea>
+                                                    </div>
+                                                    
+                                                    <div class="form-group">
+                                                        <label>Supporting Documents (PDF)</label>
+                                                        <input type="file" class="form-control" name="documents" accept=".pdf" required>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% for app in applications %}
+                                    {% if app.scholarship_type.id == scholarship.id and app.hod_feedback %}
+                                    <!-- Feedback Modal -->
+                                    <div class="modal fade" id="feedback{{ app.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Feedback for {{ scholarship.name }} Application</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Status:</strong> 
+                                                        {% if app.status == 0 %}
+                                                            <span class="badge badge-warning">Pending</span>
+                                                        {% elif app.status == 1 %}
+                                                            <span class="badge badge-success">Approved</span>
+                                                        {% else %}
+                                                            <span class="badge badge-danger">Rejected</span>
+                                                        {% endif %}
+                                                    </p>
+                                                    <p><strong>Feedback:</strong> {{ app.hod_feedback }}</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

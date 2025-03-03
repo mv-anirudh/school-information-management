@@ -1,0 +1,139 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+    Add New Scholarship
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+     
+        <!-- Form Card -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-award mr-2"></i>Add New Scholarship
+                        </h3>
+                    </div>
+
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="close" data-dismiss="alert">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'admin_add_scholarship' %}">
+                        {% csrf_token %}
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-signature mr-2"></i>Scholarship Name
+                                </label>
+                                <input type="text" name="name" class="modern-input" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-info-circle mr-2"></i>Description
+                                </label>
+                                <textarea name="description" class="modern-textarea" rows="4" required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-rupee-sign mr-2"></i>Amount
+                                </label>
+                                <input type="number" name="amount" class="modern-input" min="0" step="0.01" required>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="modern-button">
+                                <i class="fas fa-save mr-2"></i>Create Scholarship
+                            </button>
+                            <a href="{% url 'admin_manage_scholarships' %}" class="modern-button secondary">
+                                <i class="fas fa-arrow-left mr-2"></i>Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+:root {
+    --primary: #4361ee;
+    --border-radius: 0.25rem;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modern-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.modern-input, .modern-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.modern-input:focus, .modern-textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+    outline: none;
+}
+
+.modern-button {
+    background: var(--primary);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.modern-button:hover {
+    background: darken(var(--primary), 10%);
+}
+
+.modern-button.secondary {
+    background: #718096;
+    margin-left: 1rem;
+}
+
+.modern-button.secondary:hover {
+    background: darken(#718096, 10%);
+}
+
+.alert {
+    border-radius: var(--border-radius);
+    margin: 1rem;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Auto-expand textarea
+    $('.modern-textarea').on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+});
+</script>
+{% endblock main_content %}

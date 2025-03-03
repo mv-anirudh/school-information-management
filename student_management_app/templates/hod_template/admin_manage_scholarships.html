@@ -1,0 +1,174 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+    Manage Scholarships
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        
+        <!-- Action Buttons -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <a href="{% url 'admin_add_scholarship' %}" class="modern-button">
+                    <i class="fas fa-plus-circle mr-2"></i>Add New Scholarship
+                </a>
+            </div>
+        </div>
+
+        <!-- Scholarships Grid -->
+        <div class="row">
+            {% for scholarship in scholarships %}
+            <div class="col-md-4 mb-4">
+                <div class="scholarship-card">
+                    <div class="scholarship-header">
+                        <h3>{{ scholarship.name }}</h3>
+                        <span class="amount">₹{{ scholarship.amount }}</span>
+                    </div>
+                    <div class="scholarship-body">
+                        <p>{{ scholarship.description }}</p>
+                    </div>
+                    <div class="scholarship-footer">
+                        <span class="timestamp">
+                            <i class="fas fa-clock mr-2"></i>Created: {{ scholarship.created_at|date:"M d, Y" }}
+                        </span>
+                        <div class="stats">
+                            <span class="stat-item">
+                                <i class="fas fa-users mr-1"></i>
+                                {{ scholarship.scholarshipapplication_set.count }} Applications
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-award"></i>
+                    <h3>No Scholarships Found</h3>
+                    <p>Start by adding a new scholarship using the button above.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<style>
+:root {
+    --primary: #4361ee;
+    --secondary: #3a0ca3;
+    --success: #4CAF50;
+    --info: #2196F3;
+    --warning: #ff9800;
+    --danger: #f44336;
+    --border-radius: 8px;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.status-bar {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.modern-button {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.modern-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    color: white;
+}
+
+.scholarship-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.scholarship-card:hover {
+    transform: translateY(-5px);
+}
+
+.scholarship-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.scholarship-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.amount {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    margin-top: 0.5rem;
+}
+
+.scholarship-body {
+    padding: 1.5rem;
+}
+
+.scholarship-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timestamp {
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat-item {
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #4361ee;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.scholarship-card {
+    animation: fadeIn 0.5s ease forwards;
+}
+</style>
+{% endblock main_content %}

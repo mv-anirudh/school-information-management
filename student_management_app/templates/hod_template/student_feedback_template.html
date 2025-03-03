@@ -1,0 +1,123 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+    Student Feedback
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card" style="background-color: #ffffff; border: none; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px;">
+                    <div class="card-header" style="background-color: #3949ab; color: white; border-radius: 8px 8px 0 0;">
+                        <h3 class="card-title">Student Feedback</h3>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Student Session</th>
+                                    <th>Message</th>
+                                    <th>Sended On</th>
+                                    <th>Reply</th>
+                                </tr>
+                            </thead>
+
+                            {% for feedback in feedbacks %}
+                            <tbody>
+                                <tr>
+                                    <td>{{ feedback.id }}</td>
+                                    <td>{{ feedback.student_id.admin.id }}</td>
+                                    <td>{{ feedback.student_id.admin.first_name }} {{ feedback.student_id.admin.last_name }}</td>
+                                    <td>{{ feedback.student_id.session_year_id.session_start_year }} - {{ feedback.student_id.session_year_id.session_end_year }}</td>
+                                    <td>{{ feedback.feedback }}</td>
+                                    <td>{{ feedback.created_at }}</td>
+                                    <td>
+                                        {% if feedback.feedback_reply == "" %}
+                                            <button class="btn reply_open_modal" data-toggle="modal" data-target="#replyModal"
+                                                    style="background-color: #28a745; color: white; border-radius: 5px; padding: 8px 20px; border: none;">Reply</button>
+                                        {% else %}
+                                            {{ feedback.feedback_reply }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reply Modal -->
+<div class="modal fade" id="replyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius: 8px;">
+            <div class="modal-header" style="background-color: #3949ab; color: white; border-radius: 8px 8px 0 0;">
+                <h5 class="modal-title" id="exampleModalLabel">Reply Feedback</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Reply to: <b><span id="reply_name"></span></b></p>
+                <input type="hidden" id="reply_id" name="reply_id" />
+                <textarea class="form-control" rows="5" id="reply_message" style="border-radius: 5px; border: 1px solid #ddd;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-block" id="reply_button"
+                        style="background-color: #3949ab; color: white; border-radius: 5px; padding: 8px 20px; border: none;">Reply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    $(document).ready(function(){
+        $(".reply_open_modal").click(function(){
+            var id = $(this).parents("tr").children("td:eq(0)").text();
+            var name = $(this).parents("tr").children("td:eq(2)").text();
+            
+            $("#reply_id").val(id);
+            $("#reply_name").text(name);
+        });
+
+        $(document).on("click", "#reply_button", function(){
+            $(this).attr("disabled", "disabled")
+            $(this).text("Sending Reply...")
+
+            var id=$("#reply_id").val();
+            var reply=$("#reply_message").val();
+
+            $.ajax({
+                url:'{% url 'student_feedback_message_reply' %}',
+                type:'POST',
+                data:{id:id, reply:reply},
+            })
+            .done(function(response){
+                if(response=="True") {
+                    alert("Reply Sent!")
+                } else {
+                    alert("Failed to Send Reply!")
+                }
+                location.reload()
+            })
+            .fail(function(){
+                alert("Error in Sending Feedback Reply.")
+            })
+        })
+    })
+</script>
+{% endblock custom_js %}

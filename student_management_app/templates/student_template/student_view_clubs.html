@@ -1,0 +1,145 @@
+{% extends 'student_template/base_template.html' %}
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Available Clubs</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        {% if messages %}
+                        <div class="col-12">
+                            {% for message in messages %}
+                            {% if message.tags == 'error' %}
+                            <div class="alert alert-danger">{{ message }}</div>
+                            {% else %}
+                            <div class="alert alert-success">{{ message }}</div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <table id="example2" class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Club Name</th>
+                                    <th>Description</th>
+                                    <th>Staff In-charge</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for club in clubs %}
+                                <tr>
+                                    <td>{{ club.name }}</td>
+                                    <td>{{ club.description }}</td>
+                                    <td>{{ club.staff_in_charge.admin.first_name }} {{ club.staff_in_charge.admin.last_name }}</td>
+                                    <td>
+                                        {% if club.id in applied_club_ids %}
+                                            {% for applied in applied_clubs %}
+                                                {% if applied.club_id.id == club.id %}
+                                                    {% if applied.status == 0 %}
+                                                        <span class="badge badge-warning">Pending</span>
+                                                    {% elif applied.status == 1 %}
+                                                        <span class="badge badge-success">Approved</span>
+                                                    {% else %}
+                                                        <span class="badge badge-danger">Rejected</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="badge badge-info">Not Applied</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if club.id not in applied_club_ids %}
+                                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#applyClub{{ club.id }}">
+                                                Apply
+                                            </button>
+                                        {% else %}
+                                            {% for applied in applied_clubs %}
+                                                {% if applied.club_id.id == club.id and applied.feedback %}
+                                                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#feedback{{ applied.id }}">
+                                                        View Feedback
+                                                    </button>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <!-- Apply Modal -->
+                                <div class="modal fade" id="applyClub{{ club.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Apply to {{ club.name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{% url 'student_apply_club' %}" method="post">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="club_id" value="{{ club.id }}">
+                                                    <div class="form-group">
+                                                        <label>Why do you want to join this club?</label>
+                                                        <textarea class="form-control" name="message" rows="5" required></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Submit Application</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% for applied in applied_clubs %}
+                                    {% if applied.club_id.id == club.id and applied.feedback %}
+                                    <!-- Feedback Modal -->
+                                    <div class="modal fade" id="feedback{{ applied.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Feedback for {{ club.name }} Application</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Status:</strong> 
+                                                        {% if applied.status == 0 %}
+                                                            <span class="badge badge-warning">Pending</span>
+                                                        {% elif applied.status == 1 %}
+                                                            <span class="badge badge-success">Approved</span>
+                                                        {% else %}
+                                                            <span class="badge badge-danger">Rejected</span>
+                                                        {% endif %}
+                                                    </p>
+                                                    <p><strong>Your Application:</strong> {{ applied.application_message }}</p>
+                                                    <p><strong>Feedback:</strong> {{ applied.feedback }}</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

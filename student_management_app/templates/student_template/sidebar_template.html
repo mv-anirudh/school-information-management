@@ -1,0 +1,203 @@
+{% load static %}
+
+<aside class="main-sidebar sidebar-dark-primary elevation-4" style="background-color: #1a1a2e;">
+  <!-- Brand Logo -->
+  <a href="{% url 'student_home' %}" class="brand-link" style="background-color: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,0.1);">
+    <img src="{% static 'dist/img/AdminLTELogo.png' %}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
+         style="opacity: .8">
+    <span class="brand-text font-weight-light">Open University</span>
+  </a>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- Sidebar user panel -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+      <div class="image">
+        <img src="{% static 'dist/img/user2-160x160.jpg' %}" class="img-circle elevation-2" alt="User Image">
+      </div>
+      <div class="info">
+        <a href="{% url 'student_profile' %}" class="d-block" style="color: #fff;">
+          {{ user.first_name }} {{ user.last_name }}
+        </a>
+        <small style="color: rgba(255,255,255,0.6);">Student</small>
+      </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <nav class="mt-2">
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        
+        <li class="nav-item">
+          {% url 'student_home' as student_home %}
+          <a href="{{ student_home }}" class="nav-link {% if request.path == student_home %}active{% endif %}" 
+             style="color: #fff;">
+            <i class="nav-icon fas fa-tachometer-alt" style="color: #fff;"></i>
+            <p>Dashboard</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          {% url 'student_view_attendance' as student_view_attendance %}
+          <a href="{{ student_view_attendance }}" 
+             class="nav-link {% if request.path == student_view_attendance %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-calendar-check" style="color: #fff;"></i>
+            <p>View Attendance</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          {% url 'student_view_result' as student_view_result %}
+          <a href="{{ student_view_result }}" 
+             class="nav-link {% if request.path == student_view_result %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-graduation-cap" style="color: #fff;"></i>
+            <p>View Result</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          {% url 'student_apply_leave' as student_apply_leave %}
+          <a href="{{ student_apply_leave }}" 
+             class="nav-link {% if request.path == student_apply_leave %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-sign-out-alt" style="color: #fff;"></i>
+            <p>Apply for Leave</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          {% url 'student_view_clubs' as student_view_clubs %}
+          <a href="{{ student_view_clubs }}" 
+             class="nav-link {% if request.path == student_view_clubs %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-users" style="color: #fff;"></i>
+            <p>View Clubs</p>
+          </a>
+        </li>
+
+        <!-- <li class="nav-item">
+          {% url 'student_apply_club' as student_apply_club %}
+          <a href="{{ student_apply_club }}" 
+             class="nav-link {% if request.path == student_apply_club %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-user-plus" style="color: #fff;"></i>
+            <p>Apply for Club</p>
+          </a>
+        </li> -->
+
+        <li class="nav-item">
+          {% url 'student_view_scholarships' as student_view_scholarships %}
+          <a href="{{ student_view_scholarships }}" 
+             class="nav-link {% if request.path == student_view_scholarships %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-award" style="color: #fff;"></i>
+            <p>View Scholarships</p>
+          </a>
+        </li>
+
+        <!-- <li class="nav-item">
+          {% url 'student_apply_scholarship' as student_apply_scholarship %}
+          <a href="{{ student_apply_scholarship }}" 
+             class="nav-link {% if request.path == student_apply_scholarship %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-file-alt" style="color: #fff;"></i>
+            <p>Apply for Scholarship</p>
+          </a>
+        </li> -->
+
+        <li class="nav-item">
+          {% url 'student_feedback' as student_feedback %}
+          <a href="{{ student_feedback }}" 
+             class="nav-link {% if request.path == student_feedback %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-comment-alt" style="color: #fff;"></i>
+            <p>Send Feedback</p>
+          </a>
+        </li>
+
+      </ul>
+    </nav>
+  </div>
+</aside>
+
+<style>
+:root {
+  --active-link-bg: #4361ee;
+  --hover-link-bg: rgba(67, 97, 238, 0.1);
+}
+
+.nav-sidebar .nav-link {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 4px 8px;
+  padding: 12px 16px;
+}
+
+.nav-sidebar .nav-link:hover {
+  background-color: var(--hover-link-bg);
+  transform: translateX(4px);
+}
+
+.nav-sidebar .nav-link.active {
+  background-color: var(--active-link-bg) !important;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+}
+
+.nav-sidebar .nav-link.active:hover {
+  transform: none;
+}
+
+.nav-sidebar .nav-link p {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nav-sidebar .nav-icon {
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.nav-sidebar .nav-link:hover .nav-icon {
+  transform: scale(1.1);
+}
+
+.brand-link {
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.brand-link:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.brand-text {
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+}
+
+.user-panel {
+  padding: 12px;
+}
+
+.user-panel .info a {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.user-panel .info a:hover {
+  color: var(--active-link-bg) !important;
+}
+
+.sidebar-dark-primary {
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+  .nav-sidebar .nav-link {
+    margin: 2px 4px;
+    padding: 8px 12px;
+  }
+}
+</style>

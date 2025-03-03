@@ -1,0 +1,201 @@
+{% extends 'staff_template/base_template.html' %}
+
+{% block page_title %}
+    Manage Clubs
+{% endblock page_title %}
+
+{% block main_content %}
+{% load static %}
+
+<section class="content">
+    <div class="container-fluid">
+
+        <!-- Clubs Overview -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="modern-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-users mr-2"></i>Your Clubs
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+                        {% if clubs %}
+                            <div class="row">
+                                {% for club in clubs %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="club-card">
+                                        <div class="club-header">
+                                            <h4>{{ club.name }}</h4>
+                                            <span class="badge badge-info">
+                                                {{ club.clubmembership_set.count }} Members
+                                            </span>
+                                        </div>
+                                        <div class="club-body">
+                                            <p>{{ club.description|truncatewords:30 }}</p>
+                                            <div class="club-stats">
+                                                <div class="stat-item">
+                                                    <i class="fas fa-clock"></i>
+                                                    <span>Created: {{ club.created_at|date:"M d, Y" }}</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <i class="fas fa-user-plus"></i>
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="club-footer">
+                                            <a href="{% url 'staff_view_club_applications' club.id %}" 
+                                               class="modern-button">
+                                                <i class="fas fa-tasks mr-2"></i>Manage Applications
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-users-slash"></i>
+                                <h3>No Clubs Found</h3>
+                                <p>You are not currently in charge of any clubs.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<style>
+:root {
+    --primary: #4361ee;
+    --secondary: #3a0ca3;
+    --success: #4CAF50;
+    --danger: #f44336;
+    --info: #2196F3;
+    --border-radius: 8px;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.status-bar {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.modern-card {
+    background: white;
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.modern-card .card-header {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.club-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+}
+
+.club-card:hover {
+    transform: translateY(-5px);
+}
+
+.club-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.club-header h4 {
+    margin: 0;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.club-body {
+    padding: 1.5rem;
+}
+
+.club-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #718096;
+    font-size: 0.875rem;
+}
+
+.club-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #dee2e6;
+    text-align: right;
+}
+
+.modern-button {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.modern-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.club-card {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+{% for i in clubs %}
+.club-card:nth-child({{ forloop.counter }}) {
+   
+}
+{% endfor %}
+</style>
+{% endblock custom_js %}
