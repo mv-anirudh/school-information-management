@@ -1,53 +1,157 @@
-                    <form role="form" method="POST" action="{{ action_path }}" enctype="multipart/form-data">
-                        {% csrf_token %}
+<div class="card-body">
+    {% if messages %}
+    <div class="form-group">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
-                        
-                                {% comment %} Display Messages {% endcomment %}
-                                {% if messages %}
-                                <div class="form-group">
-                                <div class="col-12">
-                                    {% for message in messages %}
-                                    {% if message.tags == "error" %}
-                                        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-top: 10px;">
-                                        {{ message }}
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        </div>
-                                    {% elif message.tags == "success" %}
-                                        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top: 10px;">
-                                        {{ message }}
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        </div>
-                                    {% endif %}
-                                    {% endfor %}
-                                </div>
-                                </div>
-                                {% endif %}
+    <form method="POST" action="{{ action_path }}" enctype="multipart/form-data">
+        {% csrf_token %}
 
-                        <div class="card-body">
-                            
-                            {% comment %} Adding Form with All inputs Here {% endcomment %}
+        <!-- Basic Information -->
+        <h4 class="mb-4">Basic Information</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.first_name.label_tag }}
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label_tag }}
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.last_name.label_tag }}
+                    {{ form.last_name }}
+                </div>
+                <div class="form-group">
+                    {{ form.password.label_tag }}
+                    {{ form.password }}
+                </div>
+            </div>
+        </div>
 
-                            {% for field in form %}
-                                <div class="form-group">
+        <!-- Personal Information Section -->
+        <h4 class="mt-4 mb-4">Personal Information</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.gender.label_tag }}
+                    {{ form.gender }}
+                </div>
+                <div class="form-group">
+                    {{ form.date_of_birth.label_tag }}
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="form-group">
+                    {{ form.blood_group.label_tag }}
+                    {{ form.blood_group }}
+                </div>
+                <!-- Add religion field -->
+                <div class="form-group">
+                    {{ form.religion.label_tag }}
+                    {{ form.religion }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.phone_number.label_tag }}
+                    {{ form.phone_number }}
+                </div>
+                <div class="form-group">
+                    {{ form.address.label_tag }}
+                    {{ form.address }}
+                </div>
+                <!-- Add caste field -->
+                <div class="form-group">
+                    {{ form.caste.label_tag }}
+                    {{ form.caste }}
+                </div>
+            </div>
+        </div>
 
-                                    {{ field.errors }}
-                                    {{ field.label_tag }}
-                                    {{ field }}
+        <!-- Academic Information -->
+        <h4 class="mt-4 mb-4">Academic Information</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.course_id.label_tag }}
+                    {{ form.course_id }}
+                </div>
+                <div class="form-group">
+                    {{ form.second_language.label_tag }}
+                    {{ form.second_language }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.session_year_id.label_tag }}
+                    {{ form.session_year_id }}
+                </div>
+            </div>
+        </div>
 
-                                </div>
-                            {% endfor %%}
+        <!-- Parent Information -->
+        <h4 class="mt-4 mb-4">Parent Information</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.father_name.label_tag }}
+                    {{ form.father_name }}
+                </div>
+                <div class="form-group">
+                    {{ form.father_occupation.label_tag }}
+                    {{ form.father_occupation }}
+                </div>
+                <div class="form-group">
+                    {{ form.father_phone.label_tag }}
+                    {{ form.father_phone }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ form.mother_name.label_tag }}
+                    {{ form.mother_name }}
+                </div>
+                <div class="form-group">
+                    {{ form.mother_occupation.label_tag }}
+                    {{ form.mother_occupation }}
+                </div>
+                <div class="form-group">
+                    {{ form.mother_phone.label_tag }}
+                    {{ form.mother_phone }}
+                </div>
+            </div>
+        </div>
 
-                            
+        <div class="form-group">
+            {{ form.address.label_tag }}
+            {{ form.address }}
+        </div>
 
+        <div class="form-group">
+            {{ form.profile_pic.label_tag }}
+            {{ form.profile_pic }}
+        </div>
 
-                        </div>
-                        <!-- /.card-body -->
-
-                        <div class="card-footer">
-                        <button type="submit" class="btn btn-primary">{{ button_text }}</button>
-                        </div>
-                    </form>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">{{ button_text }}</button>
+            <a href="{% url 'manage_student' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

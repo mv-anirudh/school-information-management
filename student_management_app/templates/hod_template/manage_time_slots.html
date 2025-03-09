@@ -1,0 +1,72 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+Manage Time Slots
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Time Slots</h3>
+                        <a href="{% url 'add_time_slot' %}" class="btn btn-primary float-right">Add Time Slot</a>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for slot in time_slots %}
+                                    <tr>
+                                        <td>{{ slot.period_number }}</td>
+                                        <td>{{ slot.start_time|time:"H:i" }}</td>
+                                        <td>{{ slot.end_time|time:"H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'edit_time_slot' slot.id %}" class="btn btn-info btn-sm">Edit</a>
+                                            <a href="#" class="btn btn-danger btn-sm" onclick="confirmDelete('{{ slot.id }}')">Delete</a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No time slots found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+function confirmDelete(slotId) {
+    if(confirm('Are you sure you want to delete this time slot?')) {
+        window.location.href = "/delete_time_slot/" + slotId + "/";
+    }
+}
+</script>
+{% endblock custom_js %}

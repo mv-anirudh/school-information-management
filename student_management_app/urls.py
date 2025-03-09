@@ -59,10 +59,18 @@ urlpatterns = [
     path('admin_profile_update/', HodViews.admin_profile_update, name="admin_profile_update"),
     path('admin_manage_scholarships', HodViews.admin_manage_scholarships, name="admin_manage_scholarships"),
     path('admin_add_scholarship', HodViews.admin_add_scholarship, name="admin_add_scholarship"),
-     path('admin_view_scholarship_applications/', HodViews.admin_view_scholarship_applications, name='admin_view_scholarship_applications'),
+    path('admin_view_scholarship_applications/', HodViews.admin_view_scholarship_applications, name='admin_view_scholarship_applications'),
     path('admin_view_scholarship_application_detail/<int:application_id>/', HodViews.admin_view_scholarship_application_detail, name='admin_view_scholarship_application_detail'),
     path('approve_scholarship_application/<int:application_id>/', HodViews.approve_scholarship_application, name='approve_scholarship_application'),
     path('reject_scholarship_application/<int:application_id>/', HodViews.reject_scholarship_application, name='reject_scholarship_application'),
+    path('manage_timetable/', HodViews.manage_timetable, name='manage_timetable'),
+    path('add_timetable/', HodViews.add_timetable, name='add_timetable'),
+    path('edit_timetable/<int:timetable_id>/', HodViews.edit_timetable, name='edit_timetable'),
+    path('delete_timetable/<int:timetable_id>/', HodViews.delete_timetable, name='delete_timetable'),
+    path('manage_time_slots/', HodViews.manage_time_slots, name='manage_time_slots'),
+    path('add_time_slot/', HodViews.add_time_slot, name='add_time_slot'),
+    path('edit_time_slot/<int:time_slot_id>/', HodViews.edit_time_slot, name='edit_time_slot'),
+    path('delete_time_slot/<int:time_slot_id>/', HodViews.delete_time_slot, name='delete_time_slot'),
 
     # URLS for Staff
     path('staff_home/', StaffViews.staff_home, name="staff_home"),
@@ -86,7 +94,7 @@ urlpatterns = [
     path('staff_view_club_applications/<int:club_id>', StaffViews.staff_view_club_applications, name="staff_view_club_applications"),
     path('staff_approve_club_application/<int:application_id>', StaffViews.staff_approve_club_application, name="staff_approve_club_application"),
     path('staff_reject_club_application/<int:application_id>', StaffViews.staff_reject_club_application, name="staff_reject_club_application"),
-   
+    path('staff_view_timetable/', StaffViews.staff_view_timetable, name='staff_view_timetable'),
 
     # URSL for Student
     path('student_home/', StudentViews.student_home, name="student_home"),
@@ -103,6 +111,7 @@ urlpatterns = [
     path('student_apply_club', StudentViews.student_apply_club, name="student_apply_club"),
     path('student_view_scholarships', StudentViews.student_view_scholarships, name="student_view_scholarships"),
     path('student_apply_scholarship', StudentViews.student_apply_scholarship, name="student_apply_scholarship"),
+    path('student_view_timetable/', StudentViews.student_view_timetable, name='student_view_timetable'),
 ]
 
 # Add these URL patterns to your urls.py file

@@ -8,7 +8,7 @@ from django.core import serializers
 import json
 
 
-from student_management_app.models import Club, ClubMembership, CustomUser, Staffs, Courses, Subjects, Students, SessionYearModel, Attendance, AttendanceReport, LeaveReportStaff, FeedBackStaffs, StudentResult
+from student_management_app.models import Club, ClubMembership, CustomUser, Staffs, Courses, Subjects, Students, SessionYearModel, Attendance, AttendanceReport, LeaveReportStaff, FeedBackStaffs, StudentResult, Timetable
 
 
 def staff_home(request):
@@ -459,3 +459,31 @@ def staff_reject_club_application(request, application_id):
     except Exception as e:
         messages.error(request, f"An error occurred: {str(e)}")
         return redirect('staff_manage_clubs')
+
+def staff_view_timetable(request):
+    try:
+        staff = Staffs.objects.get(admin=request.user)
+        
+        # Get filter parameters
+        day_filter = request.GET.get('day')
+        course_filter = request.GET.get('course')
+        
+        # Base queryset
+        entries = Timetable.objects.filter(staff=staff).order_by('day', 'time_slot__start_time')
+        
+        # Apply filters
+        if day_filter:
+            entries = entries.filter(day=day_filter)
+        if course_filter:
+            entries = entries.filter(course_id=course_filter)
+        
+        context = {
+            'entries': entries,
+            'days': Timetable.day_choices,
+            'courses': Courses.objects.all(),
+        }
+        return render(request, 'staff_template/staff_view_timetable.html', context)
+        
+    except Exception as e:
+        messages.error(request, f"Error fetching timetable: {str(e)}")
+        return redirect('staff_home')

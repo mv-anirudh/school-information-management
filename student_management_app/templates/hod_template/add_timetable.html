@@ -1,0 +1,124 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+Add Timetable Entry
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary">
+                        <h3 class="card-title">Add New Timetable Entry</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{% url 'add_timetable' %}">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Course</label>
+                                        <select name="course" class="form-control" required>
+                                            <option value="">Select Course</option>
+                                            {% for course in courses %}
+                                            <option value="{{ course.id }}">{{ course.course_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Day</label>
+                                        <select name="day" class="form-control" required>
+                                            <option value="">Select Day</option>
+                                            {% for day_value, day_name in days %}
+                                            <option value="{{ day_value }}">{{ day_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Time Slot</label>
+                                        <select name="time_slot" class="form-control" required>
+                                            <option value="">Select Time Slot</option>
+                                            {% for slot in time_slots %}
+                                            <option value="{{ slot.id }}">{{ slot }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Subject</label>
+                                        <select name="subject" class="form-control" required>
+                                            <option value="">Select Subject</option>
+                                            {% for subject in subjects %}
+                                            <option value="{{ subject.id }}">{{ subject.subject_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Teacher</label>
+                                        <select name="staff" class="form-control" required>
+                                            <option value="">Select Teacher</option>
+                                            {% for staff in staffs %}
+                                            <option value="{{ staff.id }}">{{ staff.admin.first_name }} {{ staff.admin.last_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Room Number</label>
+                                        <input type="text" name="room_number" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Session Year Field -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Academic Year</label>
+                                        <select name="session_year" class="form-control" required>
+                                            <option value="">Select Academic Year</option>
+                                            {% for year in session_years %}
+                                            <option value="{{ year.id }}">{{ year.session_start_year|date:"Y" }} - {{ year.session_end_year|date:"Y" }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Save Timetable Entry</button>
+                                <a href="{% url 'manage_timetable' %}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    $(document).ready(function() {
+        $('.form-control').select2();
+    });
+</script>
+{% endblock custom_js %}

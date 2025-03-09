@@ -66,12 +66,25 @@
                     </a>
                 </li>
 
+                <!-- Timetable Section -->
+                <li class="nav-header">TIMETABLE</li>
+                <li class="nav-item">
+                    {% url 'staff_view_timetable' as staff_view_timetable %}
+                    <a href="{{ staff_view_timetable }}" class="nav-link {% if request.path == staff_view_timetable %}active{% endif %}">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        <p>
+                            My Schedule
+                            <span class="right badge badge-info">New</span>
+                        </p>
+                    </a>
+                </li>
+
                 <!-- Clubs Management -->
                 <li class="nav-header">CLUBS & ACTIVITIES</li>
                 <li class="nav-item">
                     {% url 'staff_manage_clubs' as staff_manage_clubs %}
                     <a href="{{ staff_manage_clubs }}" class="nav-link {% if request.path == staff_manage_clubs %}active{% endif %}">
-                        <i class="nav-icon fas fa-users"></i>
+                        <i class="nav-icon fas fa-users"></i>   
                         <p>
                             Manage Clubs
                             <span class="right badge badge-info">New</span>

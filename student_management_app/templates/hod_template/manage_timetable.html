@@ -1,0 +1,148 @@
+{% extends 'hod_template/base_template.html' %}
+
+{% block page_title %}
+Manage Timetable
+{% endblock page_title %}
+
+{% block main_content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary">
+                        <h3 class="card-title">Timetable Overview</h3>
+                        <div class="card-tools">
+                            <a href="{% url 'add_timetable' %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus"></i> Add New Entry
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <form method="GET" class="form-inline">
+                                    <div class="form-group mr-3">
+                                        <label for="day_filter" class="mr-2">Filter by Day:</label>
+                                        <select name="day" class="form-control">
+                                            <option value="">All Days</option>
+                                            {% for day_code, day_name in days %}
+                                                <option value="{{ day_code }}" {% if request.GET.day == day_code %}selected{% endif %}>
+                                                    {{ day_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="course_filter" class="mr-2">Filter by Course:</label>
+                                        <select name="course" class="form-control">
+                                            <option value="">All Courses</option>
+                                            {% for course in courses %}
+                                                <option value="{{ course.id }}" {% if request.GET.course|stringformat:"s" == course.id|stringformat:"s" %}selected{% endif %}>
+                                                    {{ course.course_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary ml-3">Apply Filters</button>
+                                    {% if request.GET.day or request.GET.course %}
+                                        <a href="{% url 'manage_timetable' %}" class="btn btn-secondary ml-2">Clear Filters</a>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+
+                        {% if messages %}
+                        <div class="col-12">
+                            {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="table-responsive">
+                            <table id="timetableTable" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Day</th>
+                                        <th>Time Slot</th>
+                                        <th>Subject</th>
+                                        <th>Teacher</th>
+                                        <th>Room</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in timetables %}
+                                    <tr>
+                                        <td>{{ entry.course.course_name }}</td>
+                                        <td>{{ entry.get_day_display }}</td>
+                                        <td>{{ entry.time_slot }}</td>
+                                        <td>{{ entry.subject.subject_name }}</td>
+                                        <td>{{ entry.staff.admin.first_name }} {{ entry.staff.admin.last_name }}</td>
+                                        <td>{{ entry.room_number }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'edit_timetable' entry.id %}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{% url 'delete_timetable' entry.id %}" method="POST" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-sm" 
+                                                            onclick="return confirm('Are you sure you want to delete this timetable entry?');">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No timetable entries found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock main_content %}
+
+{% block custom_js %}
+<script>
+    $(document).ready(function() {
+        $('#timetableTable').DataTable({
+            "responsive": true,
+            "lengthChange": true,
+            "autoWidth": false,
+            "buttons": ["copy", "csv", "excel", "pdf", "print"]
+        }).buttons().container().appendTo('#timetableTable_wrapper .col-md-6:eq(0)');
+    });
+
+    function confirmDelete(timetableId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This timetable entry will be deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/delete_timetable/' + timetableId;
+            }
+        });
+    }
+</script>
+{% endblock custom_js %}

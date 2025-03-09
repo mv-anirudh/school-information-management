@@ -6,7 +6,8 @@ from django.urls import reverse
 from django.db.models import Avg
 import datetime # To Parse input DateTime into Python Date Time Object
 
-from student_management_app.models import Club, ClubMembership, CustomUser, ScholarshipApplication, ScholarshipType, Staffs, Courses, Subjects, Students, Attendance, AttendanceReport, LeaveReportStudent, FeedBackStudent, StudentResult
+from student_management_app.forms import EditStudentForm
+from student_management_app.models import Club, ClubMembership, CustomUser, ScholarshipApplication, ScholarshipType, Staffs, Courses, Subjects, Students, Attendance, AttendanceReport, LeaveReportStudent, FeedBackStudent, StudentResult, Timetable
 
 
 def student_home(request):
@@ -322,3 +323,51 @@ def student_apply_scholarship(request):
             application.save()
             messages.success(request, "Scholarship application submitted successfully!")
             return redirect('student_view_scholarships')
+
+
+def edit_student(request, student_id):
+    try:
+        student = Students.objects.get(admin=student_id)
+        form = EditStudentForm(initial={
+            # ...existing fields...
+            'religion': student.religion,
+            'caste': student.caste,
+        })
+        return render(request, 'edit_student.html', {'form': form, 'student': student})
+    except Students.DoesNotExist:
+        messages.error(request, "Student not found!")
+        return redirect('manage_student')
+    except Exception as e:
+        messages.error(request, f"An error occurred: {str(e)}")
+        return redirect('manage_student')
+
+
+def student_view_timetable(request):
+    try:
+        student = Students.objects.get(admin=request.user)
+        day_filter = request.GET.get('day')
+        
+        # Base queryset
+        timetable = Timetable.objects.filter(course=student.course_id)
+        
+        # Apply day filter if selected
+        if day_filter:
+            timetable = timetable.filter(day=day_filter)
+        
+        # Group timetable by day
+        timetable_by_day = {}
+        for entry in timetable.order_by('day', 'time_slot__start_time'):
+            if entry.day not in timetable_by_day:
+                timetable_by_day[entry.day] = []
+            timetable_by_day[entry.day].append(entry)
+        
+        context = {
+            'student': student,
+            'timetable_by_day': timetable_by_day,
+            'days': Timetable.day_choices,
+        }
+        return render(request, 'student_template/student_view_timetable.html', context)
+        
+    except Exception as e:
+        messages.error(request, f"Error fetching timetable: {str(e)}")
+        return redirect('student_home')

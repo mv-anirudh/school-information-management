@@ -116,6 +116,16 @@
           </a>
         </li>
 
+        <li class="nav-item">
+          {% url 'student_view_timetable' as student_view_timetable %}
+          <a href="{{ student_view_timetable }}" 
+             class="nav-link {% if request.path == student_view_timetable %}active{% endif %}"
+             style="color: #fff;">
+            <i class="nav-icon fas fa-calendar-alt" style="color: #fff;"></i>
+            <p>View Timetable</p>
+          </a>
+        </li>
+
       </ul>
     </nav>
   </div>

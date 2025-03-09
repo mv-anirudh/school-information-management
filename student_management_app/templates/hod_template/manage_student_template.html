@@ -13,6 +13,43 @@
 
             <a class="btn" href="{% url 'add_student' %}" role="button" style="background-color: #3949ab; color: white; border-radius: 5px; padding: 8px 20px; border: none;">+ Add Student</a> <br/>&nbsp;
             
+            <div class="row mb-3 mt-3">
+                <div class="col-md-8">
+                    <form method="GET" class="form-inline">
+                        <div class="form-group mr-3">
+                            <label for="course_filter" class="mr-2">Course:</label>
+                            <select name="course" class="form-control" style="border-radius: 5px; border: 1px solid #ddd;">
+                                <option value="">All Courses</option>
+                                {% for course in courses %}
+                                    <option value="{{ course.id }}" {% if request.GET.course|stringformat:"s" == course.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ course.course_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group mr-3">
+                            <label for="language_filter" class="mr-2">Second Language:</label>
+                            <select name="language" class="form-control" style="border-radius: 5px; border: 1px solid #ddd;">
+                                <option value="">All Languages</option>
+                                {% for code, name in second_languages %}
+                                    <option value="{{ code }}" {% if request.GET.language == code %}selected{% endif %}>
+                                        {{ name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn" style="background-color: #3949ab; color: white; border-radius: 5px; padding: 8px 20px; border: none;">
+                            Apply Filters
+                        </button>
+                        {% if request.GET.course or request.GET.language %}
+                            <a href="{% url 'manage_student' %}" class="btn ml-2" style="background-color: #6c757d; color: white; border-radius: 5px; padding: 8px 20px; border: none;">
+                                Clear Filters
+                            </a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            
             {% if messages %}
                                 <div class="form-group">
                                 <div class="col-12">

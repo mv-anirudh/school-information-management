@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
@@ -9,6 +10,8 @@ import json
 
 from student_management_app.models import CustomUser, ScholarshipApplication, ScholarshipType, Staffs, Courses, Subjects, Students, SessionYearModel, FeedBackStudent, FeedBackStaffs, LeaveReportStudent, LeaveReportStaff, Attendance, AttendanceReport
 from .forms import AddStudentForm, EditStudentForm
+from .models import TimeSlot, Timetable
+from django.db.models import Q
 
 
 def admin_home(request):
@@ -105,7 +108,14 @@ def add_staff_save(request):
         address = request.POST.get('address')
 
         try:
-            user = CustomUser.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name, user_type=2)
+            user = CustomUser.objects.create_user(
+                username=username,
+                password=password,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                user_type=2
+            )
             user.staffs.address = address
             user.save()
             messages.success(request, "Staff Added Successfully!")
@@ -335,83 +345,148 @@ def add_student_save(request):
         messages.error(request, "Invalid Method")
         return redirect('add_student')
     else:
-        form = AddStudentForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            address = form.cleaned_data['address']
-            session_year_id = form.cleaned_data['session_year_id']
-            course_id = form.cleaned_data['course_id']
-            gender = form.cleaned_data['gender']
-
-            # Getting Profile Pic first
-            # First Check whether the file is selected or not
-            # Upload only if file is selected
-            if len(request.FILES) != 0:
-                profile_pic = request.FILES['profile_pic']
-                fs = FileSystemStorage()
-                filename = fs.save(profile_pic.name, profile_pic)
-                profile_pic_url = fs.url(filename)
-            else:
-                profile_pic_url = None
-
-
-            try:
-                user = CustomUser.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name, user_type=3)
-                user.students.address = address
-
-                course_obj = Courses.objects.get(id=course_id)
-                user.students.course_id = course_obj
-
-                session_year_obj = SessionYearModel.objects.get(id=session_year_id)
-                user.students.session_year_id = session_year_obj
-
-                user.students.gender = gender
-                user.students.profile_pic = profile_pic_url
-                user.save()
+        try:
+            form = AddStudentForm(request.POST, request.FILES)
+            
+            if form.is_valid():
+                first_name = form.cleaned_data['first_name']
+                last_name = form.cleaned_data['last_name']
+                username = form.cleaned_data['username']
+                email = form.cleaned_data['email']
+                password = form.cleaned_data['password']
+                gender = form.cleaned_data['gender']
+                session_year_id = form.cleaned_data['session_year_id']
+                course_id = form.cleaned_data['course_id']
+                
+                # Get additional fields
+                religion = form.cleaned_data.get('religion')
+                caste = form.cleaned_data.get('caste')
+                
+                # Create CustomUser
+                user = CustomUser.objects.create_user(
+                    username=username,
+                    password=password,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    user_type=3  # Student user type
+                )
+                
+                # Get Course and Session Year instances
+                course = Courses.objects.get(id=course_id)
+                session_year = SessionYearModel.objects.get(id=session_year_id)
+                
+                # Update Student profile
+                student = Students.objects.get(admin=user)
+                student.gender = gender
+                student.session_year_id = session_year
+                student.course_id = course
+                
+                # Handle profile picture upload
+                if 'profile_pic' in request.FILES:
+                    profile_pic = request.FILES['profile_pic']
+                    fs = FileSystemStorage()
+                    filename = fs.save(profile_pic.name, profile_pic)
+                    profile_pic_url = fs.url(filename)
+                    student.profile_pic = profile_pic_url
+                
+                # Update optional fields if provided
+                if form.cleaned_data.get('date_of_birth'):
+                    student.date_of_birth = form.cleaned_data['date_of_birth']
+                if form.cleaned_data.get('blood_group'):
+                    student.blood_group = form.cleaned_data['blood_group']
+                if form.cleaned_data.get('phone_number'):
+                    student.phone_number = form.cleaned_data['phone_number']
+                if form.cleaned_data.get('address'):
+                    student.address = form.cleaned_data['address']
+                if form.cleaned_data.get('second_language'):
+                    student.second_language = form.cleaned_data['second_language']
+                
+                # Save parent/guardian information
+                student.father_name = form.cleaned_data.get('father_name', '')
+                student.father_occupation = form.cleaned_data.get('father_occupation', '')
+                student.father_phone = form.cleaned_data.get('father_phone', '')
+                student.mother_name = form.cleaned_data.get('mother_name', '')
+                student.mother_occupation = form.cleaned_data.get('mother_occupation', '')
+                student.mother_phone = form.cleaned_data.get('mother_phone', '')
+                
+                # Update Student profile with new fields
+                student.religion = religion
+                student.caste = caste
+                
+                student.save()
                 messages.success(request, "Student Added Successfully!")
                 return redirect('add_student')
-            except:
-                messages.error(request, "Failed to Add Student!")
+            else:
+                messages.error(request, f"Failed to Add Student! Form Errors: {form.errors}")
                 return redirect('add_student')
-        else:
+                
+        except Exception as e:
+            messages.error(request, f"Failed to Add Student! Error: {str(e)}")
             return redirect('add_student')
 
 
 def manage_student(request):
     students = Students.objects.all()
+    course_filter = request.GET.get('course')
+    language_filter = request.GET.get('language')
+    
+    if course_filter:
+        students = students.filter(course_id=course_filter)
+    if language_filter:
+        students = students.filter(second_language=language_filter)
+    
     context = {
-        "students": students
+        "students": students,
+        'courses': Courses.objects.all(),
+        'second_languages': Students.SECOND_LANGUAGE_CHOICES,
     }
-    return render(request, 'hod_template/manage_student_template.html', context)
+    return render(request, "hod_template/manage_student_template.html", context)
 
 
 def edit_student(request, student_id):
-    # Adding Student ID into Session Variable
-    request.session['student_id'] = student_id
+    """Edit student information"""
+    try:
+        # Get student instance
+        student = Students.objects.get(admin=student_id)
+        form = EditStudentForm(initial={
+            'email': student.admin.email,
+            'username': student.admin.username,
+            'first_name': student.admin.first_name,
+            'last_name': student.admin.last_name,
+            'address': student.address,
+            'course_id': student.course_id.id if student.course_id else None,
+            'gender': student.gender,
+            'session_year_id': student.session_year_id.id if student.session_year_id else None,
+            'blood_group': student.blood_group,
+            'date_of_birth': student.date_of_birth,
+            'phone_number': student.phone_number,
+            'second_language': student.second_language,
+            'father_name': student.father_name,
+            'father_occupation': student.father_occupation,
+            'father_phone': student.father_phone,
+            'mother_name': student.mother_name,
+            'mother_occupation': student.mother_occupation,
+            'mother_phone': student.mother_phone,
+        })
+        
+        # Store student_id in session
+        request.session['student_id'] = student_id
 
-    student = Students.objects.get(admin=student_id)
-    form = EditStudentForm()
-    # Filling the form with Data from Database
-    form.fields['email'].initial = student.admin.email
-    form.fields['username'].initial = student.admin.username
-    form.fields['first_name'].initial = student.admin.first_name
-    form.fields['last_name'].initial = student.admin.last_name
-    form.fields['address'].initial = student.address
-    form.fields['course_id'].initial = student.course_id.id
-    form.fields['gender'].initial = student.gender
-    form.fields['session_year_id'].initial = student.session_year_id.id
+        context = {
+            "form": form,
+            "id": student_id,
+            "username": student.admin.username,
+            "profile_pic": student.profile_pic
+        }
+        return render(request, "hod_template/edit_student_template.html", context)
 
-    context = {
-        "id": student_id,
-        "username": student.admin.username,
-        "form": form
-    }
-    return render(request, "hod_template/edit_student_template.html", context)
+    except Students.DoesNotExist:
+        messages.error(request, "Student Not Found!")
+        return redirect('manage_student')
+    except Exception as e:
+        messages.error(request, f"Failed to Edit Student: {str(e)}")
+        return redirect('manage_student')
 
 
 def edit_student_save(request):
@@ -908,3 +983,271 @@ def admin_view_scholarship_application_detail(request, application_id):
     except ScholarshipApplication.DoesNotExist:
         messages.error(request, "Application not found!")
         return redirect('admin_view_scholarship_applications')
+
+
+def manage_timetable(request):
+    """View all timetables"""
+    timetables = Timetable.objects.all()
+    courses = Courses.objects.all()
+    time_slots = TimeSlot.objects.all()
+    subjects = Subjects.objects.all()
+    staffs = Staffs.objects.all()
+    day_filter = request.GET.get('day')
+    timetables = Timetable.objects.all().order_by('day', 'time_slot__start_time')
+    course_filter = request.GET.get('course')
+    
+    
+    if day_filter:
+        timetables = timetables.filter(day=day_filter)
+    if course_filter:
+        timetables = timetables.filter(course_id=course_filter)
+    
+    
+    context = {
+        "timetables": timetables,
+        "courses": courses,
+        "time_slots": time_slots,
+        "subjects": subjects,
+        "staffs": staffs,
+        "days": Timetable.day_choices,
+        'selected_day': day_filter,
+        'selected_course': course_filter
+    }
+    return render(request, 'hod_template/manage_timetable.html', context)
+
+def add_timetable(request):
+    """Add new timetable entry"""
+    if request.method != "POST":
+        courses = Courses.objects.all()
+        time_slots = TimeSlot.objects.all()
+        subjects = Subjects.objects.all()
+        staffs = Staffs.objects.all()
+        session_years = SessionYearModel.objects.all()  # Add this line
+        
+        context = {
+            "courses": courses,
+            "time_slots": time_slots,
+            "subjects": subjects,
+            "staffs": staffs,
+            "days": Timetable.day_choices,
+            "session_years": session_years  # Add this line
+        }
+        return render(request, 'hod_template/add_timetable.html', context)
+    else:
+        try:
+            course_id = request.POST.get('course')
+            day = request.POST.get('day')
+            time_slot_id = request.POST.get('time_slot')
+            subject_id = request.POST.get('subject')
+            staff_id = request.POST.get('staff')
+            room_number = request.POST.get('room_number')
+            session_year_id = request.POST.get('session_year')
+
+            # Get model instances
+            course = Courses.objects.get(id=course_id)
+            time_slot = TimeSlot.objects.get(id=time_slot_id)
+            subject = Subjects.objects.get(id=subject_id)
+            staff = Staffs.objects.get(id=staff_id)
+            session_year = SessionYearModel.objects.get(id=session_year_id)
+
+            # Check for conflicts
+            conflicts = Timetable.objects.filter(
+                Q(course=course, day=day, time_slot=time_slot, session_year=session_year) |
+                Q(staff=staff, day=day, time_slot=time_slot, session_year=session_year) |
+                Q(room_number=room_number, day=day, time_slot=time_slot, session_year=session_year)
+            )
+
+            if conflicts.exists():
+                messages.error(request, "Time slot conflict detected! Please choose another slot.")
+                return redirect('add_timetable')
+
+            # Create timetable entry
+            timetable = Timetable(
+                course=course,
+                day=day,
+                time_slot=time_slot,
+                subject=subject,
+                staff=staff,
+                room_number=room_number,
+                session_year=session_year
+            )
+            timetable.save()
+            
+            messages.success(request, "Timetable entry added successfully!")
+            return redirect('manage_timetable')
+            
+        except Exception as e:
+            messages.error(request, f"Failed to add timetable entry: {str(e)}")
+            return redirect('add_timetable')
+
+def edit_timetable(request, timetable_id):
+    """Edit existing timetable entry"""
+    if request.method != "POST":
+        try:
+            timetable = Timetable.objects.get(id=timetable_id)
+            courses = Courses.objects.all()
+            time_slots = TimeSlot.objects.all()
+            subjects = Subjects.objects.all()
+            staffs = Staffs.objects.all()
+            
+            context = {
+                "timetable": timetable,
+                "courses": courses,
+                "time_slots": time_slots,
+                "subjects": subjects,
+                "staffs": staffs,
+                "days": Timetable.day_choices
+            }
+            return render(request, 'hod_template/edit_timetable.html', context)
+        
+        except Timetable.DoesNotExist:
+            messages.error(request, "Timetable entry not found!")
+            return redirect('manage_timetable')
+    else:
+        try:
+            timetable_id = request.POST.get('timetable_id')
+            course_id = request.POST.get('course')
+            day = request.POST.get('day')
+            time_slot_id = request.POST.get('time_slot')
+            subject_id = request.POST.get('subject')
+            staff_id = request.POST.get('staff')
+            room_number = request.POST.get('room_number')
+            session_year_id = request.POST.get('session_year')
+
+            # Get model instances
+            timetable = Timetable.objects.get(id=timetable_id)
+            course = Courses.objects.get(id=course_id)
+            time_slot = TimeSlot.objects.get(id=time_slot_id)
+            subject = Subjects.objects.get(id=subject_id)
+            staff = Staffs.objects.get(id=staff_id)
+            session_year = SessionYearModel.objects.get(id=session_year_id)
+
+            # Check for conflicts excluding current entry
+            conflicts = Timetable.objects.filter(
+                Q(course=course, day=day, time_slot=time_slot, session_year=session_year) |
+                Q(staff=staff, day=day, time_slot=time_slot, session_year=session_year) |
+                Q(room_number=room_number, day=day, time_slot=time_slot, session_year=session_year)
+            ).exclude(id=timetable_id)
+
+            if conflicts.exists():
+                messages.error(request, "Time slot conflict detected! Please choose another slot.")
+                return redirect('edit_timetable', timetable_id=timetable_id)
+
+            # Update timetable entry
+            timetable.course = course
+            timetable.day = day
+            timetable.time_slot = time_slot
+            timetable.subject = subject
+            timetable.staff = staff
+            timetable.room_number = room_number
+            timetable.session_year = session_year
+            timetable.save()
+            
+            messages.success(request, "Timetable entry updated successfully!")
+            return redirect('manage_timetable')
+            
+        except Exception as e:
+            messages.error(request, f"Failed to update timetable entry: {str(e)}")
+            return redirect('edit_timetable', timetable_id=timetable_id)
+
+def delete_timetable(request, timetable_id):
+    """Delete timetable entry"""
+    try:
+        timetable = Timetable.objects.get(id=timetable_id)
+        timetable.delete()
+        messages.success(request, "Timetable entry deleted successfully!")
+    except Timetable.DoesNotExist:
+        messages.error(request, "Timetable entry not found!")
+    except Exception as e:
+        messages.error(request, f"Failed to delete timetable entry: {str(e)}")
+    
+    return redirect('manage_timetable')
+
+def manage_time_slots(request):
+    """View all time slots"""
+    time_slots = TimeSlot.objects.all().order_by('period_number')
+    context = {
+        "time_slots": time_slots
+    }
+    return render(request, 'hod_template/manage_time_slots.html', context)
+
+def add_time_slot(request):
+    """Add new time slot"""
+    if request.method != "POST":
+        return render(request, 'hod_template/add_time_slot.html')
+    else:
+        try:
+            period_number = request.POST.get('period_number')
+            start_time = request.POST.get('start_time')
+            end_time = request.POST.get('end_time')
+
+            # Create time slot
+            time_slot = TimeSlot(
+                period_number=period_number,
+                start_time=start_time,
+                end_time=end_time
+            )
+            time_slot.full_clean()  # This will run model validation
+            time_slot.save()
+            
+            messages.success(request, "Time slot added successfully!")
+            return redirect('manage_time_slots')
+            
+        except ValidationError as e:
+            messages.error(request, f"Validation Error: {e.messages[0]}")
+            return redirect('add_time_slot')
+        except Exception as e:
+            messages.error(request, f"Failed to add time slot: {str(e)}")
+            return redirect('add_time_slot')
+
+def edit_time_slot(request, time_slot_id):
+    """Edit existing time slot"""
+    if request.method != "POST":
+        try:
+            time_slot = TimeSlot.objects.get(id=time_slot_id)
+            context = {
+                "time_slot": time_slot
+            }
+            return render(request, 'hod_template/edit_time_slot.html', context)
+        
+        except TimeSlot.DoesNotExist:
+            messages.error(request, "Time slot not found!")
+            return redirect('manage_time_slots')
+    else:
+        try:
+            time_slot = TimeSlot.objects.get(id=time_slot_id)
+            time_slot.period_number = request.POST.get('period_number')
+            time_slot.start_time = request.POST.get('start_time')
+            time_slot.end_time = request.POST.get('end_time')
+
+            time_slot.full_clean()  # Run validation
+            time_slot.save()
+            
+            messages.success(request, "Time slot updated successfully!")
+            return redirect('manage_time_slots')
+            
+        except ValidationError as e:
+            messages.error(request, f"Validation Error: {e.messages[0]}")
+            return redirect('edit_time_slot', time_slot_id=time_slot_id)
+        except Exception as e:
+            messages.error(request, f"Failed to update time slot: {str(e)}")
+            return redirect('edit_time_slot', time_slot_id=time_slot_id)
+
+def delete_time_slot(request, time_slot_id):
+    """Delete time slot"""
+    try:
+        time_slot = TimeSlot.objects.get(id=time_slot_id)
+        # Check if time slot is being used in any timetable
+        if Timetable.objects.filter(time_slot=time_slot).exists():
+            messages.error(request, "Cannot delete time slot as it is being used in timetable!")
+            return redirect('manage_time_slots')
+            
+        time_slot.delete()
+        messages.success(request, "Time slot deleted successfully!")
+    except TimeSlot.DoesNotExist:
+        messages.error(request, "Time slot not found!")
+    except Exception as e:
+        messages.error(request, f"Failed to delete time slot: {str(e)}")
+    
+    return redirect('manage_time_slots')
+
